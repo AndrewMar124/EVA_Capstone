@@ -1,32 +1,17 @@
-package main
-
-import (
-    "context"
-    "fmt"
-    "log"
-
-    "github.com/teilomillet/gollm"
+//TODO
+/* use REST API to create a simple web interface
+create an HTML form that takes in a csv file location and a location of the code base
+-
+-
+-
+parse csv -> for eac vuln (
+- find path to vulnerable file
+- structure raw text of csv line and vulnerable file
+- send to AI (POST to /api/generate)
 )
-
-func main() {
-    // Create a new LLM instance with Ollama provider
-    llm, err := gollm.NewLLM(
-        gollm.SetProvider("ollama"),
-        gollm.SetModel("EVAmodel"),
-    )
-    if err != nil {
-        log.Fatalf("Failed to create LLM: %v", err)
-    }
-
-    // Create a prompt using NewPrompt function
-    prompt := gollm.NewPrompt("Who was the first person to walk on the moon?")
-
-    // Generate a response
-    ctx := context.Background()
-    response, err := llm.Generate(ctx, prompt)
-    if err != nil {
-        log.Fatalf("Failed to generate response: %v", err)
-    }
-
-    fmt.Printf("Response: %s\n", response)
-}
+parse JSON AI response into DB
+-
+-
+- for each entry in db
+- show 
+*/
