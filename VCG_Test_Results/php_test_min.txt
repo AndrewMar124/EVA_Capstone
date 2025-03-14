@@ -1,0 +1,45 @@
+IGH: Potentially Unsafe Code - De-Activation of 'magic_quotes'
+Line: 2 - Z:\home\stud\EVA_Capstone\VulnerableCode\VPHPA\php.ini
+The application appears to de-activate the use of 'magic_quotes', greatly increasing the risk of SQL injection.
+magic_quotes_gpc = Off
+
+MEDIUM: Potentially Unsafe Code - Potential XSS
+Line: 14 - Z:\home\stud\EVA_Capstone\VulnerableCode\VPHPA\vendor\autoload.php
+The application appears to reflect data to the screen with no apparent validation or sanitisation. It was not clear if this variable is controlled by the user.
+            echo $err;
+
+HIGH: Potentially Unsafe Code - User Controlled Variable Used on System Command Line
+Line: 20 - Z:\home\stud\EVA_Capstone\VulnerableCode\VPHPA\vulnerabilities\view_help.php
+The application appears to allow the use of an unvalidated user-controlled variable when executing a command.
+                eval( '?>' . file_get_contents( DVWA_WEB_PAGE_TO_ROOT . "vulnerabilities/{$id}/help/help.php" ) . '<?php ' );
+
+HIGH: Potentially Unsafe Code - User Controlled Variable Used on System Command Line
+Line: 22 - Z:\home\stud\EVA_Capstone\VulnerableCode\VPHPA\vulnerabilities\view_help.php
+The application appears to allow the use of an unvalidated user-controlled variable when executing a command.
+                eval( '?>' . file_get_contents( DVWA_WEB_PAGE_TO_ROOT . "vulnerabilities/{$id}/help/help.{$locale}.php" ) . '<?php ' );
+
+MEDIUM: Potentially Unsafe Code - Potential XSS
+Line: 61 - Z:\home\stud\EVA_Capstone\VulnerableCode\VPHPA\vulnerabilities\view_source.php
+The application appears to reflect data to the screen with no apparent validation or sanitisation. It was not clear if this variable is controlled by the user.
+        $source = str_replace( array( '$html .=' ), array( 'echo' ), $source );
+
+MEDIUM: Potentially Unsafe Code - Potential XSS
+Line: 15 - Z:\home\stud\EVA_Capstone\VulnerableCode\VPHPA\vulnerabilities\view_source_all.php
+The application appears to reflect data to the screen with no apparent validation or sanitisation. It was not clear if this variable is controlled by the user.
+        $lowsrc = str_replace( array( '$html .=' ), array( 'echo' ), $lowsrc);
+
+MEDIUM: Potentially Unsafe Code - Potential XSS
+Line: 19 - Z:\home\stud\EVA_Capstone\VulnerableCode\VPHPA\vulnerabilities\view_source_all.php
+The application appears to reflect data to the screen with no apparent validation or sanitisation. It was not clear if this variable is controlled by the user.
+        $medsrc = str_replace( array( '$html .=' ), array( 'echo' ), $medsrc);
+
+MEDIUM: Potentially Unsafe Code - Potential XSS
+Line: 23 - Z:\home\stud\EVA_Capstone\VulnerableCode\VPHPA\vulnerabilities\view_source_all.php
+The application appears to reflect data to the screen with no apparent validation or sanitisation. It was not clear if this variable is controlled by the user.
+        $highsrc = str_replace( array( '$html .=' ), array( 'echo' ), $highsrc);
+
+MEDIUM: Potentially Unsafe Code - Potential XSS
+Line: 27 - Z:\home\stud\EVA_Capstone\VulnerableCode\VPHPA\vulnerabilities\view_source_all.php
+The application appears to reflect data to the screen with no apparent validation or sanitisation. It was not clear if this variable is controlled by the user.
+        $impsrc = str_replace( array( '$html .=' ), array( 'echo' ), $impsrc);
+

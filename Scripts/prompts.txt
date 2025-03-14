@@ -1,0 +1,1 @@
+perform analysis of /home/stud/EVA_Capstone/VulnerableCode/VPHPA  /home/stud/EVA_Capstone/VCG_Test_Results/php_test_1.txt
