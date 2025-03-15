@@ -1,0 +1,2 @@
+Severity,Description,Title,FileName,LineNumber,Line
+2,High,"De-Activation of 'magic_quotes'","The application appears to de-activate the use of 'magic_quotes', greatly increasing the risk of SQL injection.",Z:\home\stud\EVA_Capstone\VulnerableCode\VPHPA\php.ini,2,"magic_quotes_gpc = Off",False,"LawnGreen"
