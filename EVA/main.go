@@ -1,47 +1,52 @@
-//TODO
-/* use REST API to create a simple web interface
-create an HTML form that takes in a csv file location and a location of the code base
--
--
--
-parse csv -> for eac vuln (
-- find path to vulnerable file
-- structure raw text of csv line and vulnerable file
-- send to AI (POST to /api/generate)
-)
-parse JSON AI response into DB
--
--
-- for each entry in db
-- show 
-*/
 package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"log"
 	"net/http"
-
+	"strings"
+	"syscall"
 )
 
 type Vulnerability struct {
-	SeverityNumber   int    `json:"severity_number"`
-	SeverityDescription string `json:"severity_description"`
-	Vulnerability    string `json:"vulnerability"`
-	VulnDescription  string `json:"vuln_description"`
-	FileName         string `json:"file_name"`
-	LineNumber       int    `json:"line_number"`
-	LOC              string `json:"line_of_code"`
-	Confirmed        bool   `json:"confirmed"`
-	Color            string `json:"color"`
+	SeverityNumber      string `json:"Severity_Number"`
+	SeverityDescription string `json:"Severity_Description"`
+	Vulnerability       string `json:"Vulnerability"`
+	VulnDescription     string `json:"Vuln_Description"`
+	FileName            string `json:"FileName"`
+	LineNumber          string `json:"LineNumber"`
+	LOC                 string `json:"LOC"`
+	Confirmed           string `json:"Cpnfiemed"`
+	Color               string `json:"Color"`
+	FileContents        string `json:"FileContents"`
 }
 
-func csv_reader() {
+func getFileContents(filePath string) string {
+	normalizedPath := strings.ReplaceAll(filePath, "\\", "/")
+	path := strings.ReplaceAll(normalizedPath, "Z:", "")
+
+
+	// Read file contents
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if pathErr, ok := err.(*os.PathError); ok {
+			if errno, ok := pathErr.Err.(syscall.Errno); ok {
+				fmt.Println("File system error:", errno)
+			}
+		}
+		fmt.Println("Error reading file:", normalizedPath, err)
+		return ""
+	}
+
+	return string(data)
+}
+
+func processCSVAndSendRequests() {
 	// Open CSV file
 	file, err := os.Open("/home/stud/EVA_Capstone/VCG_Test_Results/php_small.csv")
 	if err != nil {
@@ -64,12 +69,9 @@ func csv_reader() {
 		return
 	}
 
-	// Replace header row
+	// Define headers
 	headers := []string{"Severity_Number", "Severity_Description", "Vulnerability", "Vuln_Description", "FileName", "LineNumber", "LOC", "Cpnfiemed", "Color"}
 
-	var jsonData []map[string]string
-
-	// Convert CSV to JSON
 	for _, row := range records[1:] {
 		if len(row) != len(headers) {
 			fmt.Println("Skipping malformed row:", row)
@@ -79,88 +81,56 @@ func csv_reader() {
 		for i, value := range row {
 			entry[headers[i]] = value
 		}
-		jsonData = append(jsonData, entry)
-	}
 
-	// Convert to JSON format
-	jsonOutput, err := json.MarshalIndent(jsonData, "", "  ")
-	if err != nil {
-		fmt.Println("Error converting to JSON:", err)
-		return
-	}
+		// Read file contents
+		fileContents := getFileContents(entry["FileName"])
+		entry["FileContents"] = fileContents
 
-	// Print JSON output
-	fmt.Println(string(jsonOutput))
+		jsonEntry, err := json.Marshal(entry)
+		if err != nil {
+			fmt.Println("Error marshaling JSON:", err)
+			continue
+		}
+
+		// Send JSON to LLM
+		response := sendToLLM(string(jsonEntry))
+		fmt.Println("AI Response:", response)
+	}
 }
 
-
-
-
-func main() {
-	// Prepare the JSON body
+func sendToLLM(prompt string) string {
 	requestBody := map[string]interface{}{
-		"model":  "qwen2.5-coder:0.5b",
-		"system": `You are an AI designed to analyze the results of a static code analysis. Your capabilities are limited to the following:
-
-    	1. You will receive an input:
-        	A JSON description containing the results of a static code analysis.
-
-    	2. Your task is to analyze the code. You must verify the vulnerability by checking the associated code in the directory location.
-        	For each vulnerability, you need to determine if it is a true positive (the vulnerability is present and valid) or a false positive (the vulnerability is not present or is incorrectly reported).
-
-    	3. You are not allowed to perform any actions other than the above tasks. Specifically, you cannot:
-        	Make changes to the codebase or file.
-        	Process or analyze any information outside of the JSON provided.
-        	Report Vulnerabilities other than the one provided in the JSON.
-
-    	4. Your responses should be filling in the provided JSON with whether vulnerability is a true positive or false positive and your reasoning.
-		`,
-		"prompt": "Ollama is 22 years old and is busy saving the world. Respond using JSON",
-  		"format": map[string]interface{}{
-	"type": "object",
-	"properties": map[string]interface{}{
-		"Severity_Number":      map[string]string{"type": "string"},
-		"Severity_Description": map[string]string{"type": "string"},
-		"Vulnerability":        map[string]string{"type": "string"},
-		"Vuln_Description":     map[string]string{"type": "string"},
-		"FileName":             map[string]string{"type": "string"},
-		"LineNumber":           map[string]string{"type": "string"},
-		"LOC":                  map[string]string{"type": "string"},
-		"Cpnfiemed":            map[string]string{"type": "string"},
-		"Color":                map[string]string{"type": "string"},
-		"Reason":                map[string]string{"type": "string"},
-	},
-	"required": []string{
-		"Severity_Number", "Severity_Description", "Vulnerability", 
-		"Vuln_Description", "FileName", "LineNumber", "LOC", "Cpnfiemed", "Color",
-	},
-},
+		"model": "qwen2.5-coder:0.5b",
+		"system": "You are an AI designed to analyze the results of a static code analysis. Analyze the provided JSON entry.",
+		"prompt": prompt,
+		"format": map[string]interface{}{
+			"type": "object",
+			"properties": map[string]interface{}{
+				"Validation": map[string]string{"type": "string"},
+				"Reason": map[string]string{"type": "string"},
+			},
+			"required": []string{"Validation", "Reason"},
+		},
 		"stream": false,
 		"options": map[string]interface{}{
-			"top_k":            10,
-			"top_p":            0.5,
-			"repeat_last_n":    0,
-			"temperature":      0.7,
+			"top_k":         10,
+			"top_p":         0.5,
+			"repeat_last_n": 0,
+			"temperature":   0.7,
 		},
 	}
 
-	// Convert the Go map to JSON
 	jsonData, err := json.Marshal(requestBody)
 	if err != nil {
 		log.Fatalf("Error marshaling JSON: %v", err)
 	}
 
-	// Create a new POST request
-	url := "http://localhost:11434/api/generate"
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", "http://localhost:11434/api/generate", bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Fatalf("Error creating request: %v", err)
 	}
 
-	// Set the request header
 	req.Header.Set("Content-Type", "application/json")
-
-	// Send the request using the default HTTP client
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -168,25 +138,24 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	// Read the response body
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalf("Error reading response body: %v", err)
 	}
-// Parse the JSON response into a map
+
 	var jsonResponse map[string]interface{}
 	err = json.Unmarshal(respBody, &jsonResponse)
 	if err != nil {
 		log.Fatalf("Error unmarshaling response: %v", err)
 	}
 
-	// Extract the "response" field
 	if response, exists := jsonResponse["response"]; exists {
-		// Print the response portion
-		fmt.Printf("Response: %v\n", response)
-	} else {
-		log.Println("No 'response' field found in the JSON response.")
+		return fmt.Sprintf("%v", response)
 	}
 
-	csv_reader()
+	return "No response field found"
+}
+
+func main() {
+	processCSVAndSendRequests()
 }
