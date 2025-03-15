@@ -21,7 +21,7 @@ type Vulnerability struct {
 	FileName            string `json:"FileName"`
 	LineNumber          string `json:"LineNumber"`
 	LOC                 string `json:"LOC"`
-	Confirmed           string `json:"Cpnfiemed"`
+	Confirmed           string `json:"Confirmed"`
 	Color               string `json:"Color"`
 	FileContents        string `json:"FileContents"`
 }
@@ -70,7 +70,7 @@ func processCSVAndSendRequests() {
 	}
 
 	// Define headers
-	headers := []string{"Severity_Number", "Severity_Description", "Vulnerability", "Vuln_Description", "FileName", "LineNumber", "LOC", "Cpnfiemed", "Color"}
+	headers := []string{"Severity_Number", "Severity_Description", "Vulnerability", "Vuln_Description", "FileName", "LineNumber", "LOC", "Confirmed", "Color"}
 
 	for _, row := range records[1:] {
 		if len(row) != len(headers) {
@@ -86,15 +86,18 @@ func processCSVAndSendRequests() {
 		fileContents := getFileContents(entry["FileName"])
 		entry["FileContents"] = fileContents
 
+		
 		jsonEntry, err := json.Marshal(entry)
 		if err != nil {
 			fmt.Println("Error marshaling JSON:", err)
 			continue
 		}
-
+	
 		// Send JSON to LLM
 		response := sendToLLM(string(jsonEntry))
+		fmt.Println(string(jsonEntry))
 		fmt.Println("AI Response:", response)
+		
 	}
 }
 
