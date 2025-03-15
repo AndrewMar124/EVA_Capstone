@@ -30,15 +30,42 @@ func main() {
 	// Prepare the JSON body
 	requestBody := map[string]interface{}{
 		"model":  "qwen2.5-coder:0.5b",
+		"system": `You are an AI designed to analyze the results of a static code analysis. Your capabilities are limited to the following:
+
+    	1. You will receive two inputs:
+        	A file location pointing to a file containing the results of a static code analysis.
+        	A directory location pointing to the directory that contains the codebase that was analyzed.
+
+    	2. Your task is to analyze the file containing the static code analysis results. For each vulnerability listed in the file:
+        	You must verify the vulnerability by checking the associated code in the directory location.
+        	For each vulnerability, you need to determine if it is a true positive (the vulnerability is present and valid) or a false positive (the vulnerability is not present or is incorrectly reported).
+
+    	3. You are not allowed to perform any actions other than the above tasks. Specifically, you cannot:
+        	Make changes to the codebase or file.
+        	Process or analyze any information outside of the static code analysis results file and the provided directory.
+        	Report Vulnerabilities not in the text file.
+
+    	4. Your responses should be clear, concise, and focused solely on indicating whether each vulnerability is a true positive or false positive.
+		`,
 		"prompt": "Ollama is 22 years old and is busy saving the world. Respond using JSON",
-		"stream": false,
-		"format": map[string]interface{}{
+  		"format": map[string]interface{}{
 			"type": "object",
 			"properties": map[string]interface{}{
 				"age":       map[string]string{"type": "integer"},
 				"available": map[string]string{"type": "boolean"},
 			},
 			"required": []string{"age", "available"},
+		},
+		"stream": false,
+		"options": map[string]interface{}{
+			//
+			"top_k":            10,
+			//
+			"top_p":            0.5,
+			//
+			"repeat_last_n":    0,
+			//
+			"temperature":      0.7,
 		},
 	}
 
@@ -71,8 +98,18 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error reading response body: %v", err)
 	}
+// Parse the JSON response into a map
+	var jsonResponse map[string]interface{}
+	err = json.Unmarshal(respBody, &jsonResponse)
+	if err != nil {
+		log.Fatalf("Error unmarshaling response: %v", err)
+	}
 
-	// Print the response status code and body
-	fmt.Printf("Response Status: %s\n", resp.Status)
-	fmt.Printf("Response Body: %s\n", string(respBody))
+	// Extract the "response" field
+	if response, exists := jsonResponse["response"]; exists {
+		// Print the response portion
+		fmt.Printf("Response: %v\n", response)
+	} else {
+		log.Println("No 'response' field found in the JSON response.")
+	}
 }
