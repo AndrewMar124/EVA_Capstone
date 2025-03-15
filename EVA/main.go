@@ -64,17 +64,20 @@ func csv_reader() {
 		return
 	}
 
-	// Extract headers
-	headers := records[0]
+	// Replace header row
+	headers := []string{"Severity_Number", "Severity_Description", "Vulnerability", "Vuln_Description", "FileName", "LineNumber", "LOC", "Cpnfiemed", "Color"}
+
 	var jsonData []map[string]string
 
 	// Convert CSV to JSON
 	for _, row := range records[1:] {
+		if len(row) != len(headers) {
+			fmt.Println("Skipping malformed row:", row)
+			continue
+		}
 		entry := make(map[string]string)
 		for i, value := range row {
-			if i < len(headers) {
-				entry[headers[i]] = value
-			}
+			entry[headers[i]] = value
 		}
 		jsonData = append(jsonData, entry)
 	}
@@ -89,6 +92,7 @@ func csv_reader() {
 	// Print JSON output
 	fmt.Println(string(jsonOutput))
 }
+
 
 
 
