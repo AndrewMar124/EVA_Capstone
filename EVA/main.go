@@ -117,13 +117,24 @@ func main() {
 		`,
 		"prompt": "Ollama is 22 years old and is busy saving the world. Respond using JSON",
   		"format": map[string]interface{}{
-			"type": "object",
-			"properties": map[string]interface{}{
-				"age":       map[string]string{"type": "integer"},
-				"available": map[string]string{"type": "boolean"},
-			},
-			"required": []string{"age", "available"},
-		},
+	"type": "object",
+	"properties": map[string]interface{}{
+		"Severity_Number":      map[string]string{"type": "string"},
+		"Severity_Description": map[string]string{"type": "string"},
+		"Vulnerability":        map[string]string{"type": "string"},
+		"Vuln_Description":     map[string]string{"type": "string"},
+		"FileName":             map[string]string{"type": "string"},
+		"LineNumber":           map[string]string{"type": "string"},
+		"LOC":                  map[string]string{"type": "string"},
+		"Cpnfiemed":            map[string]string{"type": "string"},
+		"Color":                map[string]string{"type": "string"},
+		"Reason":                map[string]string{"type": "string"},
+	},
+	"required": []string{
+		"Severity_Number", "Severity_Description", "Vulnerability", 
+		"Vuln_Description", "FileName", "LineNumber", "LOC", "Cpnfiemed", "Color",
+	},
+},
 		"stream": false,
 		"options": map[string]interface{}{
 			"top_k":            10,
