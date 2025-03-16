@@ -26,6 +26,60 @@ type Vulnerability struct {
 	FileContents        string `json:"FileContents"`
 }
 
+func jsonToHTMLTable(jsonData string) string {
+	var records []map[string]interface{}
+
+	// Attempt to unmarshal as an array
+	err := json.Unmarshal([]byte(jsonData), &records)
+	if err != nil {
+		// If it fails, try to unmarshal as a single object
+		var singleRecord map[string]interface{}
+		if err := json.Unmarshal([]byte(jsonData), &singleRecord); err == nil {
+			records = append(records, singleRecord) // Convert object to array
+		} else {
+			log.Printf("Error unmarshaling JSON: %v", err)
+			return "<p>Error parsing JSON</p>"
+		}
+	}
+
+	// If empty, return a message
+	if len(records) == 0 {
+		return "<p>No data available</p>"
+	}
+
+	// Extract headers from the first record
+	var headers []string
+	for key := range records[0] {
+		headers = append(headers, key)
+	}
+
+	// Start HTML table
+	var htmlTable strings.Builder
+	htmlTable.WriteString("<table border='1'><tr>")
+
+	// Add table headers
+	for _, header := range headers {
+		htmlTable.WriteString(fmt.Sprintf("<th>%s</th>", header))
+	}
+	htmlTable.WriteString("</tr>")
+
+	// Add table rows
+	for _, record := range records {
+		htmlTable.WriteString("<tr>")
+		for _, header := range headers {
+			value := fmt.Sprintf("%v", record[header])
+			htmlTable.WriteString(fmt.Sprintf("<td>%s</td>", value))
+		}
+		htmlTable.WriteString("</tr>")
+	}
+
+	// Close table
+	htmlTable.WriteString("</table>")
+	return htmlTable.String()
+}
+
+
+
 func getFileContents(filePath string) string {
 	normalizedPath := strings.ReplaceAll(filePath, "\\", "/")
 	path := strings.ReplaceAll(normalizedPath, "Z:", "")
@@ -46,7 +100,7 @@ func getFileContents(filePath string) string {
 	return string(data)
 }
 
-func processCSVAndSendRequests() {
+func processCSVAndSendRequests(w http.ResponseWriter, r *http.Request) {
 	// Open CSV file
 	file, err := os.Open("/home/stud/EVA_Capstone/VCG_Test_Results/php_small.csv")
 	if err != nil {
@@ -92,7 +146,24 @@ func processCSVAndSendRequests() {
 			fmt.Println("Error marshaling JSON:", err)
 			continue
 		}
-	
+		htmlTable := jsonToHTMLTable(string(jsonEntry))
+		// Serve the HTML page
+	fmt.Fprintf(w, `
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<title>Vulnerability Report</title>
+		<style>
+			table { border-collapse: collapse; width: 100%%; }
+			th, td { border: 1px solid black; padding: 8px; text-align: left; }
+		</style>
+	</head>
+	<body>
+		<h2>Vulnerabilities Report</h2>
+		%s
+	</body>
+	</html>
+`, htmlTable)
 		// Send JSON to LLM
 		response := sendToLLM(string(jsonEntry))
 		//fmt.Println(string(jsonEntry))
@@ -103,7 +174,7 @@ func processCSVAndSendRequests() {
 
 func sendToLLM(prompt string) string {
 	requestBody := map[string]interface{}{
-		"model": "EVAmodel",
+		"model": "qwen2.5-coder:0.5b",
 		"system": `You are an AI designed to analyze the results of a static code analysis. Your capabilities are limited to the following:
 
 		1. You will receive an input:
@@ -174,5 +245,7 @@ func sendToLLM(prompt string) string {
 }
 
 func main() {
-	processCSVAndSendRequests()
+	http.HandleFunc("/", processCSVAndSendRequests)
+	fmt.Println("Server running at http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
