@@ -95,7 +95,7 @@ func processCSVAndSendRequests() {
 	
 		// Send JSON to LLM
 		response := sendToLLM(string(jsonEntry))
-		fmt.Println(string(jsonEntry))
+		//fmt.Println(string(jsonEntry))
 		fmt.Println("AI Response:", response)
 		
 	}
@@ -103,13 +103,27 @@ func processCSVAndSendRequests() {
 
 func sendToLLM(prompt string) string {
 	requestBody := map[string]interface{}{
-		"model": "qwen2.5-coder:0.5b",
-		"system": "You are an AI designed to analyze the results of a static code analysis. Analyze the provided JSON entry.",
+		"model": "EVAmodel",
+		"system": `You are an AI designed to analyze the results of a static code analysis. Your capabilities are limited to the following:
+
+		1. You will receive an input:
+			JSON with information from a static code analysis and the file contents of the vulnerable file.
+	
+		2. Your task is to analyze the JSON:
+			You must verify the vulnerability by checking the associated code in FileContents.
+			For the vulnerability, you need to determine if it is a true positive (the vulnerability is present and valid) or a false positive (the vulnerability is not present or is incorrectly reported).
+			Respond with the verification: either true or false positive and your reasoning in the provided JSON fromat.
+	
+		3. You are not allowed to perform any actions other than the above tasks. Specifically, you cannot:
+			Make changes to the codebase or file.
+			Report Vulnerabilities not in the text file.
+	
+		4. Your responses should be clear, concise, and focused solely on indicating whether each vulnerability is a true positive or false positive.`,
 		"prompt": prompt,
 		"format": map[string]interface{}{
 			"type": "object",
 			"properties": map[string]interface{}{
-				"Validation": map[string]string{"type": "string"},
+				"Verification": map[string]string{"type": "string"},
 				"Reason": map[string]string{"type": "string"},
 			},
 			"required": []string{"Validation", "Reason"},
