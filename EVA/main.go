@@ -26,60 +26,6 @@ type Vulnerability struct {
 	FileContents        string `json:"FileContents"`
 }
 
-func jsonToHTMLTable(jsonData string) string {
-	var records []map[string]interface{}
-
-	// Attempt to unmarshal as an array
-	err := json.Unmarshal([]byte(jsonData), &records)
-	if err != nil {
-		// If it fails, try to unmarshal as a single object
-		var singleRecord map[string]interface{}
-		if err := json.Unmarshal([]byte(jsonData), &singleRecord); err == nil {
-			records = append(records, singleRecord) // Convert object to array
-		} else {
-			log.Printf("Error unmarshaling JSON: %v", err)
-			return "<p>Error parsing JSON</p>"
-		}
-	}
-
-	// If empty, return a message
-	if len(records) == 0 {
-		return "<p>No data available</p>"
-	}
-
-	// Extract headers from the first record
-	var headers []string
-	for key := range records[0] {
-		headers = append(headers, key)
-	}
-
-	// Start HTML table
-	var htmlTable strings.Builder
-	htmlTable.WriteString("<table border='1'><tr>")
-
-	// Add table headers
-	for _, header := range headers {
-		htmlTable.WriteString(fmt.Sprintf("<th>%s</th>", header))
-	}
-	htmlTable.WriteString("</tr>")
-
-	// Add table rows
-	for _, record := range records {
-		htmlTable.WriteString("<tr>")
-		for _, header := range headers {
-			value := fmt.Sprintf("%v", record[header])
-			htmlTable.WriteString(fmt.Sprintf("<td>%s</td>", value))
-		}
-		htmlTable.WriteString("</tr>")
-	}
-
-	// Close table
-	htmlTable.WriteString("</table>")
-	return htmlTable.String()
-}
-
-
-
 func getFileContents(filePath string) string {
 	normalizedPath := strings.ReplaceAll(filePath, "\\", "/")
 	path := strings.ReplaceAll(normalizedPath, "Z:", "")
@@ -93,14 +39,14 @@ func getFileContents(filePath string) string {
 				fmt.Println("File system error:", errno)
 			}
 		}
-		fmt.Println("Error reading file:", normalizedPath, err)
+		fmt.Println("Error reading file:", path, err)
 		return ""
 	}
 
 	return string(data)
 }
 
-func processCSVAndSendRequests(w http.ResponseWriter, r *http.Request) {
+func processCSVAndSendRequests() {
 	// Open CSV file
 	file, err := os.Open("/home/stud/EVA_Capstone/VCG_Test_Results/php_small.csv")
 	if err != nil {
@@ -146,28 +92,11 @@ func processCSVAndSendRequests(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Error marshaling JSON:", err)
 			continue
 		}
-		htmlTable := jsonToHTMLTable(string(jsonEntry))
-		// Serve the HTML page
-	fmt.Fprintf(w, `
-	<!DOCTYPE html>
-	<html>
-	<head>
-		<title>Vulnerability Report</title>
-		<style>
-			table { border-collapse: collapse; width: 100%%; }
-			th, td { border: 1px solid black; padding: 8px; text-align: left; }
-		</style>
-	</head>
-	<body>
-		<h2>Vulnerabilities Report</h2>
-		%s
-	</body>
-	</html>
-`, htmlTable)
+	
 		// Send JSON to LLM
 		response := sendToLLM(string(jsonEntry))
-		//fmt.Println(string(jsonEntry))
-		fmt.Println("AI Response:", response)
+		fmt.Println(string(jsonEntry))
+		fmt.Println(response)
 		
 	}
 }
@@ -183,7 +112,7 @@ func sendToLLM(prompt string) string {
 		2. Your task is to analyze the JSON:
 			You must verify the vulnerability by checking the associated code in FileContents.
 			For the vulnerability, you need to determine if it is a true positive (the vulnerability is present and valid) or a false positive (the vulnerability is not present or is incorrectly reported).
-			Respond with the verification: either true or false positive and your reasoning in the provided JSON fromat.
+			Respond with the verification: either true or false positive and your reasoning in the provided JSON fromat. Provide your resoning for this in Reason.
 	
 		3. You are not allowed to perform any actions other than the above tasks. Specifically, you cannot:
 			Make changes to the codebase or file.
@@ -194,10 +123,10 @@ func sendToLLM(prompt string) string {
 		"format": map[string]interface{}{
 			"type": "object",
 			"properties": map[string]interface{}{
-				"Verification": map[string]string{"type": "string"},
 				"Reason": map[string]string{"type": "string"},
+				"Verification": map[string]string{"type": "string"},
 			},
-			"required": []string{"Validation", "Reason"},
+			"required": []string{"Reason", "Verification"},
 		},
 		"stream": false,
 		"options": map[string]interface{}{
@@ -245,7 +174,5 @@ func sendToLLM(prompt string) string {
 }
 
 func main() {
-	http.HandleFunc("/", processCSVAndSendRequests)
-	fmt.Println("Server running at http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	processCSVAndSendRequests()
 }
