@@ -17,6 +17,7 @@ import (
 )
 
 type Vulnerability struct {
+	ID int
 	Color               string `json:"Color"`
 	Confirmed           string `json:"Confirmed"`
 	FileContents       string `json:"FileContents"`
@@ -29,6 +30,7 @@ type Vulnerability struct {
 	Vulnerability      string `json:"Vulnerability"`
 	Reason             string `json:"Reason"`
 	Verification       string `json:"Verification"`
+	CreatedAt string
 }
 
 func conn_psql() *sql.DB{
@@ -116,7 +118,7 @@ func processCSVAndSendRequests() {
 	//db
 	db := conn_psql()
 	// Open CSV file
-	file, err := os.Open("/home/stud/EVA_Capstone/VCG_Test_Results/php_small.csv")
+	file, err := os.Open("/home/stud/EVA_Capstone/VCG_Test_Results/php_results.csv")
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
@@ -244,6 +246,6 @@ func sendToLLM(prompt string) string {
 	return "No response field found"
 }
 
-func main() {
-	processCSVAndSendRequests()
-}
+//func main() {
+//	processCSVAndSendRequests()
+//}

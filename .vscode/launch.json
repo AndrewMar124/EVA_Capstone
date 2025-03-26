@@ -7,7 +7,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "EVA/main.go"
+            "program": "EVA"
         }
     ]
 }
