@@ -97,6 +97,9 @@ func processCSVAndSendRequests() {
 		response := sendToLLM(string(jsonEntry))
 		fmt.Println(string(jsonEntry))
 		fmt.Println(response)
+
+		// insert into psql db
+		
 		
 	}
 }
