@@ -2,29 +2,100 @@ package main
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"syscall"
+
+	_ "github.com/lib/pq"
 )
 
 type Vulnerability struct {
-	SeverityNumber      string `json:"Severity_Number"`
-	SeverityDescription string `json:"Severity_Description"`
-	Vulnerability       string `json:"Vulnerability"`
-	VulnDescription     string `json:"Vuln_Description"`
-	FileName            string `json:"FileName"`
-	LineNumber          string `json:"LineNumber"`
-	LOC                 string `json:"LOC"`
-	Confirmed           string `json:"Confirmed"`
 	Color               string `json:"Color"`
-	FileContents        string `json:"FileContents"`
+	Confirmed           string `json:"Confirmed"`
+	FileContents       string `json:"FileContents"`
+	Filename           string `json:"FileName"`
+	LOC                 string `json:"LOC"`
+	LineNumber         int    `json:"LineNumber"`
+	SeverityDescription string `json:"Severity_Description"`
+	SeverityNumber     int    `json:"Severity_Number"`
+	VulnDescription    string `json:"Vuln_Description"`
+	Vulnerability      string `json:"Vulnerability"`
+	Reason             string `json:"Reason"`
+	Verification       string `json:"Verification"`
 }
+
+func conn_psql() *sql.DB{
+	// Set up the connection string to PostgreSQL
+	connStr := "user=postgres password=stud dbname=eva sslmode=disable"
+
+	// Connect to the database
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal("Error opening connection to the database: ", err)
+	}
+
+	// Check if the connection is working
+	err = db.Ping()
+	if err != nil {
+		log.Fatal("Error pinging the database: ", err)
+	}
+	fmt.Println("Successfully connected to the database!")
+	return db
+}
+
+func insertVulnerabilityFromJSON(db *sql.DB, llmr string, prompt string) error {
+    // Combine prompt and response into a single string for processing
+    combinedPromptResponse := fmt.Sprintf("Prompt: %s\nResponse: %s", prompt, llmr)
+
+    // Debug log to ensure function is being reached
+    fmt.Println("Entering insertVulnerabilityFromJSON function")
+    fmt.Println("Combined Prompt and Response:", combinedPromptResponse)
+
+    // Parse JSON into Vulnerability struct
+    var vuln Vulnerability
+    err := json.Unmarshal([]byte(combinedPromptResponse), &vuln)
+    if err != nil {
+        return fmt.Errorf("failed to parse JSON: %v", err)
+    }
+
+    // Log the parsed vulnerability for debugging
+    fmt.Printf("Parsed vulnerability struct: %+v", vuln)
+
+    query := `
+        INSERT INTO vulnerabilities (
+            color, confirmed, file_contents, filename, loc, line_number,
+            severity_description, severity_number, vuln_description, vulnerability,
+            reason, verification
+        ) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        RETURNING id;
+    `
+
+    // Execute the query
+    var id int
+    err = db.QueryRow(query, vuln.Color, vuln.Confirmed, vuln.FileContents, vuln.Filename, vuln.LOC, vuln.LineNumber,
+        vuln.SeverityDescription, vuln.SeverityNumber, vuln.VulnDescription, vuln.Vulnerability, vuln.Reason, vuln.Verification).
+        Scan(&id)
+
+    if err != nil {
+        return fmt.Errorf("failed to insert vulnerability: %v", err)
+    }
+
+    // Log successful insert
+    fmt.Printf("Successfully inserted vulnerability with ID %d\n", id)
+    return nil
+}
+
+
+
+
 
 func getFileContents(filePath string) string {
 	normalizedPath := strings.ReplaceAll(filePath, "\\", "/")
@@ -47,6 +118,8 @@ func getFileContents(filePath string) string {
 }
 
 func processCSVAndSendRequests() {
+	//db
+	db := conn_psql()
 	// Open CSV file
 	file, err := os.Open("/home/stud/EVA_Capstone/VCG_Test_Results/php_small.csv")
 	if err != nil {
@@ -99,7 +172,7 @@ func processCSVAndSendRequests() {
 		fmt.Println(response)
 
 		// insert into psql db
-		
+		insertVulnerabilityFromJSON(db, string(jsonEntry), string(response))
 		
 	}
 }
