@@ -22,9 +22,9 @@ type Vulnerability struct {
 	FileContents       string `json:"FileContents"`
 	Filename           string `json:"FileName"`
 	LOC                 string `json:"LOC"`
-	LineNumber         int    `json:"LineNumber"`
+	LineNumber         string    `json:"LineNumber"`
 	SeverityDescription string `json:"Severity_Description"`
-	SeverityNumber     int    `json:"Severity_Number"`
+	SeverityNumber     string    `json:"Severity_Number"`
 	VulnDescription    string `json:"Vuln_Description"`
 	Vulnerability      string `json:"Vulnerability"`
 	Reason             string `json:"Reason"`
@@ -46,24 +46,21 @@ func conn_psql() *sql.DB{
 	if err != nil {
 		log.Fatal("Error pinging the database: ", err)
 	}
-	fmt.Println("Successfully connected to the database!")
 	return db
 }
 
 func insertVulnerabilityFromJSON(db *sql.DB, llmr string, prompt string) error {
-    // Combine prompt and response into a single string for processing
-    combinedPromptResponse := fmt.Sprintf("Prompt: %s\nResponse: %s", prompt, llmr)
 
     // Debug log to ensure function is being reached
-    fmt.Println("Entering insertVulnerabilityFromJSON function")
-    fmt.Println("Combined Prompt and Response:", combinedPromptResponse)
+    fmt.Println(llmr)
+	fmt.Println(prompt)
 
     // Parse JSON into Vulnerability struct
     var vuln Vulnerability
-    err := json.Unmarshal([]byte(combinedPromptResponse), &vuln)
-    if err != nil {
-        return fmt.Errorf("failed to parse JSON: %v", err)
-    }
+    err := json.Unmarshal([]byte(llmr), &vuln)
+    if err != nil { return fmt.Errorf("failed to parse JSON: %v", err) }
+	err2 := json.Unmarshal([]byte(prompt), &vuln)
+    if err2 != nil { return fmt.Errorf("failed to parse JSON: %v", err) }
 
     // Log the parsed vulnerability for debugging
     fmt.Printf("Parsed vulnerability struct: %+v", vuln)
@@ -88,8 +85,6 @@ func insertVulnerabilityFromJSON(db *sql.DB, llmr string, prompt string) error {
         return fmt.Errorf("failed to insert vulnerability: %v", err)
     }
 
-    // Log successful insert
-    fmt.Printf("Successfully inserted vulnerability with ID %d\n", id)
     return nil
 }
 
@@ -168,8 +163,8 @@ func processCSVAndSendRequests() {
 	
 		// Send JSON to LLM
 		response := sendToLLM(string(jsonEntry))
-		fmt.Println(string(jsonEntry))
-		fmt.Println(response)
+		//fmt.Println(string(jsonEntry))
+		//fmt.Println(response)
 
 		// insert into psql db
 		insertVulnerabilityFromJSON(db, string(jsonEntry), string(response))
