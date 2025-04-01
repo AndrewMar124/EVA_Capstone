@@ -14,11 +14,17 @@
             <a class="navbar-brand" href="https://github.com/AndrewMar124">EVA</a>
           </div>
           <ul class="nav navbar-nav">
-            <li class="active"><a href="/">Home</a></li>
+            <li><a href="/">Home</a></li>
             <li><a href="/vuln">Vuln</a></li>
-            <li><a href="/proj">Projects</a></li>
+            <li class="active"><a href="/proj">Projects</a></li>
           </ul>
         </div>
       </nav>
+      <!--Create project -->
+      <form action="/createProject" method="post" enctype="multipart/form-data">
+        Project Name<br><input type="text" name="name"><br><br>
+        SCA Results<br><input type="file" name="file" accept=".csv" required><br>
+        <input type="submit" value="Create Project">
+      </form>
 </body>
 </html>

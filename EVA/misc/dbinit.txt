@@ -1,0 +1,26 @@
+CREATE DATABASE eva;
+
+CREATE TABLE project (
+    name VARCHAR(255) PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    codebase TEXT,
+    sca TEXT
+);
+
+CREATE TABLE vulnerability (
+    id SERIAL PRIMARY KEY,
+    color TEXT,
+    confirmed TEXT,
+    file_contents TEXT,
+    filename TEXT,
+    loc TEXT,
+    line_number INTEGER,
+    severity_description TEXT,
+    severity_number INTEGER,
+    vuln_description TEXT,
+    vulnerability TEXT,
+    reason TEXT,
+    verification TEXT,
+    project_name VARCHAR(255),
+    FOREIGN KEY (project_name) REFERENCES project(name)
+);
