@@ -10,10 +10,18 @@ import (
 )
 
 func main() {
-    http.HandleFunc("/", serveVulnerabilities)
+    http.HandleFunc("/", serveDash)
+	http.HandleFunc("/vuln", serveVulnerabilities)
+
+	fs := http.FileServer(http.Dir("static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
     fmt.Println("Server started on http://localhost:8080")
     log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func serveDash(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "dash.html")
 }
 
 func serveVulnerabilities(w http.ResponseWriter, r *http.Request) {
@@ -59,67 +67,12 @@ func serveVulnerabilities(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Load HTML template
-	tmpl := `
-	<!DOCTYPE html>
-	<html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Vulnerabilities</title>
-		<style>
-			body { font-family: Arial, sans-serif; margin: 20px; }
-			table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-			th, td { border: 1px solid black; padding: 10px; text-align: left; }
-			th { background-color: #f2f2f2; }
-			.confirmed { background-color: #d4edda; } /* Green for confirmed */
-			.not-confirmed { background-color: #f8d7da; } /* Red for not confirmed */
-		</style>
-	</head>
-	<body>
-		<h2>Vulnerabilities List</h2>
-		<table>
-			<tr>
-				<th>Color</th>
-				<th>Confirmed</th>
-				<th>File Contents</th>
-				<th>Filename</th>
-				<th>LOC</th>
-				<th>Line Number</th>
-				<th>Severity Description</th>
-				<th>Severity Number</th>
-				<th>Vulnerability</th>
-				<th>Vuln Description</th>
-				<th>Reason</th>
-				<th>Verification</th>
-			</tr>
-			{{range .}}
-			<tr>
-				<td style="color: {{.Color}};">{{.Color}}</td>
-				<td>{{.Confirmed}}</td>
-				<td><pre>{{.FileContents}}</pre></td>
-				<td>{{.Filename}}</td>
-				<td>{{.LOC}}</td>
-				<td>{{.LineNumber}}</td>
-				<td>{{.SeverityDescription}}</td>
-				<td>{{.SeverityNumber}}</td>
-				<td>{{.Vulnerability}}</td>
-				<td>{{.VulnDescription}}</td>
-				<td>{{.Reason}}</td>
-				<td>{{.Verification}}</td>
-			</tr>
-			{{end}}
-		</table>
-	</body>
-	</html>
-	`
-
-	t, err := template.New("webpage").Parse(tmpl)
+	tmpl, err := template.ParseFiles("vuln.html")
 	if err != nil {
-		http.Error(w, "Template parsing error", http.StatusInternalServerError)
+		http.Error(w, "Error loading template", http.StatusInternalServerError)
 		return
 	}
 
-
     // Render template with vulnerabilities data
-    t.Execute(w, vulnerabilities)
+    tmpl.Execute(w, vulnerabilities)
 }
