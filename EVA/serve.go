@@ -11,12 +11,17 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type Project struct {
+	Name string
+}
+
 func main() {
 	http.HandleFunc("/", serveDash)
 	http.HandleFunc("/vuln", serveVulnerabilities)
-	http.HandleFunc("/proj", serveProj)
-	
+	http.HandleFunc("/proj", projectListHandler)
+
 	http.HandleFunc("/createProject", createProject)
+	http.HandleFunc("/runEVA", runEVA)
 
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
@@ -29,8 +34,62 @@ func serveDash(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "dash.html")
 }
 
-func serveProj(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "proj.html")
+
+func runEVA(w http.ResponseWriter, r *http.Request) {
+	// Parse the `id` parameter from the URL
+	project := r.URL.Query().Get("p")
+	if project == "" {
+		http.Error(w, "Missing 'p' parameter", http.StatusBadRequest)
+		return
+	}
+
+	db := conn_psql()
+	var file_path string
+	_ = db.QueryRow("SELECT sca FROM project WHERE name = $1", project).Scan(&file_path)
+	
+
+	// Call another function with the retrieved value
+	processCSVAndSendRequests(file_path, project)
+
+	// Respond to client
+	fmt.Fprintf(w, "Processed value: %s", file_path)
+}
+
+func projectListHandler(w http.ResponseWriter, r *http.Request) {
+	// Connect to the database
+	db := conn_psql()
+	defer db.Close()
+
+	// Query all project names
+	rows, err := db.Query("SELECT name FROM project")
+	if err != nil {
+		http.Error(w, "Failed to fetch projects", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	// Slice to store project names
+	var projects []Project
+
+	// Iterate over query results
+	for rows.Next() {
+		var p Project
+		if err := rows.Scan(&p.Name); err != nil {
+			http.Error(w, "Error scanning projects", http.StatusInternalServerError)
+			return
+		}
+		projects = append(projects, p)
+	}
+
+	// Parse and execute template
+	tmpl, err := template.ParseFiles("proj.html")
+	if err != nil {
+		http.Error(w, "Template parsing error", http.StatusInternalServerError)
+		return
+	}
+
+	// Render the template with project names
+	tmpl.Execute(w, projects)
 }
 
 func createProject(w http.ResponseWriter, r *http.Request) {
@@ -91,7 +150,7 @@ func serveVulnerabilities(w http.ResponseWriter, r *http.Request) {
 	db := conn_psql()
 
 	// Query all vulnerabilities
-	rows, err := db.Query("SELECT * FROM vulnerabilities")
+	rows, err := db.Query("SELECT * FROM vulnerability")
 	if err != nil {
 		http.Error(w, "Error fetching data", http.StatusInternalServerError)
 		return

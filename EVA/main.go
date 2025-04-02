@@ -31,6 +31,7 @@ type Vulnerability struct {
 	Reason             string `json:"Reason"`
 	Verification       string `json:"Verification"`
 	CreatedAt string
+	project_name string
 }
 
 func conn_psql() *sql.DB{
@@ -51,7 +52,7 @@ func conn_psql() *sql.DB{
 	return db
 }
 
-func insertVulnerabilityFromJSON(db *sql.DB, llmr string, prompt string) error {
+func insertVulnerabilityFromJSON(db *sql.DB, llmr string, prompt string, project string) error {
 
     // Debug log to ensure function is being reached
     fmt.Println(llmr)
@@ -68,19 +69,19 @@ func insertVulnerabilityFromJSON(db *sql.DB, llmr string, prompt string) error {
     fmt.Printf("Parsed vulnerability struct: %+v", vuln)
 
     query := `
-        INSERT INTO vulnerabilities (
+        INSERT INTO vulnerability (
             color, confirmed, file_contents, filename, loc, line_number,
             severity_description, severity_number, vuln_description, vulnerability,
-            reason, verification
+            reason, verification, project_name
         ) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING id;
     `
 
     // Execute the query
     var id int
     err = db.QueryRow(query, vuln.Color, vuln.Confirmed, vuln.FileContents, vuln.Filename, vuln.LOC, vuln.LineNumber,
-        vuln.SeverityDescription, vuln.SeverityNumber, vuln.VulnDescription, vuln.Vulnerability, vuln.Reason, vuln.Verification).
+        vuln.SeverityDescription, vuln.SeverityNumber, vuln.VulnDescription, vuln.Vulnerability, vuln.Reason, vuln.Verification, project).
         Scan(&id)
 
     if err != nil {
@@ -114,11 +115,11 @@ func getFileContents(filePath string) string {
 	return string(data)
 }
 
-func processCSVAndSendRequests() {
+func processCSVAndSendRequests(file_path string, project string) {
 	//db
 	db := conn_psql()
 	// Open CSV file
-	file, err := os.Open("/home/stud/EVA_Capstone/VCG_Test_Results/php_results.csv")
+	file, err := os.Open(file_path)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
@@ -169,7 +170,7 @@ func processCSVAndSendRequests() {
 		//fmt.Println(response)
 
 		// insert into psql db
-		insertVulnerabilityFromJSON(db, string(jsonEntry), string(response))
+		insertVulnerabilityFromJSON(db, string(jsonEntry), string(response), project)
 		
 	}
 }
