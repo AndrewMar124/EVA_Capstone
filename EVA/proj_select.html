@@ -14,15 +14,26 @@
             <a class="navbar-brand" href="https://github.com/AndrewMar124">EVA</a>
           </div>
           <ul class="nav navbar-nav">
-            <li class="active"><a href="/">Home</a></li>
+            <li><a href="/">Home</a></li>
             <li><a href="/vuln">Vuln</a></li>
-            <li><a href="/proj">Projects</a></li>
+            <li class="active"><a href="/proj">Projects</a></li>
           </ul>
         </div>
       </nav>
 
-      <h1>EVA: AI Enhanced Vulnerability Analysis</h1>
-      <h2><a href="/proj">My Projects</a></h2>
-      <h2><a href="/create_proj">Create New Project</a></h2>
+      <a href="/create_proj">Create New Project</a>
+
+      <h2>Projects</h2>
+      <ul>
+        {{range .}}
+        <li>
+            <a href="/view_project?p={{.Name}}">{{.Name}}</a>
+        </li>
+        {{else}}
+        <p>No projects found.</p>
+        {{end}}
+    </ul>
+
+    
 </body>
 </html>

@@ -13,12 +13,15 @@ import (
 
 type Project struct {
 	Name string
+	Sca string
 }
 
 func main() {
 	http.HandleFunc("/", serveDash)
 	http.HandleFunc("/vuln", serveVulnerabilities)
 	http.HandleFunc("/proj", projectListHandler)
+	http.HandleFunc("/create_proj", serve_create_proj)
+	http.HandleFunc("/view_project", view_project)
 
 	http.HandleFunc("/createProject", createProject)
 	http.HandleFunc("/runEVA", runEVA)
@@ -34,6 +37,33 @@ func serveDash(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "dash.html")
 }
 
+func serve_create_proj(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "create_project.html")
+}
+
+func view_project(w http.ResponseWriter, r *http.Request) {
+	// Parse the `id` parameter from the URL
+	var projects Project
+	p := r.URL.Query().Get("p")
+	projects.Name = p
+	if projects.Name == "" {
+		http.Error(w, "Missing 'p' parameter", http.StatusBadRequest)
+		return
+	}
+	db := conn_psql()
+	_ = db.QueryRow("SELECT sca FROM project WHERE name = $1", projects.Name).Scan(&projects.Sca)
+
+	// Parse and execute template
+	tmpl, err := template.ParseFiles("view_project.html")
+	if err != nil {
+		http.Error(w, "Template parsing error", http.StatusInternalServerError)
+		return
+	}
+
+	// Render the template with project names
+	tmpl.Execute(w, projects)
+
+}
 
 func runEVA(w http.ResponseWriter, r *http.Request) {
 	// Parse the `id` parameter from the URL
@@ -82,7 +112,7 @@ func projectListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse and execute template
-	tmpl, err := template.ParseFiles("proj.html")
+	tmpl, err := template.ParseFiles("proj_select.html")
 	if err != nil {
 		http.Error(w, "Template parsing error", http.StatusInternalServerError)
 		return
@@ -149,8 +179,15 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 func serveVulnerabilities(w http.ResponseWriter, r *http.Request) {
 	db := conn_psql()
 
+
+	project := r.URL.Query().Get("p")
+	if project == "" {
+		http.Error(w, "Missing 'p' parameter", http.StatusBadRequest)
+		return
+	}
+
 	// Query all vulnerabilities
-	rows, err := db.Query("SELECT * FROM vulnerability")
+	rows, err := db.Query("SELECT * FROM vulnerability WHERE project_name = $1", project)
 	if err != nil {
 		http.Error(w, "Error fetching data", http.StatusInternalServerError)
 		return

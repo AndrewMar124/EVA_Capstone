@@ -26,20 +26,5 @@
         SCA Results<br><input type="file" name="file" accept=".csv" required><br>
         <input type="submit" value="Create Project">
       </form>
-
-
-
-      <h2>Projects</h2>
-      <ul>
-        {{range .}}
-        <li>
-            <a href="/runEVA?p={{.Name}}">{{.Name}}</a>
-        </li>
-        {{else}}
-        <p>No projects found.</p>
-        {{end}}
-    </ul>
-
-    
 </body>
 </html>

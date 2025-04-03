@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/static/bootstrap.min.css">
+        <script src="/static/htmx.min.js"></script>
+		<title>Proj</title>
+		<style>
+.table-container {max-height: 400px;overflow-y: auto;width: 100%;}
+table {width: 100%;border-collapse: collapse;margin-top: 20px;display: table;}
+th, td {border: 1px solid black;padding: 10px;text-align: left;max-width: 150px;word-break: break-word;}
+td {vertical-align: top;}
+td div {max-height: 100px;overflow-y: auto;word-wrap: break-word;}
+th {background-color: #f2f2f2;position: sticky;top: 0;z-index: 2;}
+.confirmed {background-color: #d4edda;}
+.not-confirmed {background-color: #f8d7da;}
+
+		</style>
+	</head>
+	<body>
+        <!-- Navigation (Navbar) -->
+     <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="https://github.com/AndrewMar124">EVA</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li><a href="/">Home</a></li>
+            <li class="active"><a href="/vuln">Vuln</a></li>
+			<li><a href="/proj">Projects</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <h1>Project: {{.Name}}</h1>
+      <p>File: {{.Sca}}</p>
+
+      <a href="/runEVA?p={{.Name}}">RUN EVA</a>
+
+      <div hx-get="/vuln?p={{.Name}}" hx-trigger="load"></div>
+
+		
+	</body>
+	</html>

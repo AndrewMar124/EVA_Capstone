@@ -31,7 +31,6 @@ type Vulnerability struct {
 	Reason             string `json:"Reason"`
 	Verification       string `json:"Verification"`
 	CreatedAt string
-	project_name string
 }
 
 func conn_psql() *sql.DB{
