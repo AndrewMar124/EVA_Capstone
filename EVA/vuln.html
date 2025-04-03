@@ -24,33 +24,28 @@ th {background-color: #f2f2f2;position: sticky;top: 0;z-index: 2;}
 		<h2>Vulnerabilities List</h2>
 		<table>
 			<tr>
-				<th>Color</th>
 				<th>Confirmed</th>
-				<th>File Contents</th>
+				<th>Severity Description</th>
+				<th>EVA Verification</th>
+				<th>EVA Reasoning</th>
 				<th>Filename</th>
 				<th>LOC</th>
 				<th>Line Number</th>
-				<th>Severity Description</th>
-				<th>Severity Number</th>
 				<th>Vulnerability</th>
 				<th>Vuln Description</th>
-				<th>Reason</th>
-				<th>Verification</th>
 			</tr>
 			{{range .}}
 			<tr>
-				<td style="color: {{.Color}};">{{.Color}}</td>
 				<td>{{.Confirmed}}</td>
-				<td><div><pre>{{.FileContents}}</pre></div></td>
+				<td>{{.SeverityDescription}}</td>
+				<td>{{.Verification}}</td>
+				<td>{{.Reason}}</td>
 				<td>{{.Filename}}</td>
 				<td>{{.LOC}}</td>
 				<td>{{.LineNumber}}</td>
-				<td>{{.SeverityDescription}}</td>
-				<td>{{.SeverityNumber}}</td>
 				<td>{{.Vulnerability}}</td>
 				<td>{{.VulnDescription}}</td>
-				<td>{{.Reason}}</td>
-				<td>{{.Verification}}</td>
+				
 			</tr>
 			{{end}}
 		</table>
