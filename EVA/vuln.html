@@ -36,6 +36,7 @@ th {background-color: #f2f2f2;position: sticky;top: 0;z-index: 2;}
 			</tr>
 			{{range .}}
 			<tr>
+				<div id="id" style="display: none;">{{.ID}}</div>
 				<td>{{.Confirmed}}</td>
 				<td>{{.SeverityDescription}}</td>
 				<td>{{.Verification}}</td>

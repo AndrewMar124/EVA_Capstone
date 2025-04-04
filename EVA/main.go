@@ -30,7 +30,7 @@ type Vulnerability struct {
 	Vulnerability      string `json:"Vulnerability"`
 	Reason             string `json:"Reason"`
 	Verification       string `json:"Verification"`
-	CreatedAt string
+	Project_Name string
 }
 
 func conn_psql() *sql.DB{
@@ -69,18 +69,18 @@ func insertVulnerabilityFromJSON(db *sql.DB, llmr string, prompt string, project
 
     query := `
         INSERT INTO vulnerability (
-            color, confirmed, file_contents, filename, loc, line_number,
-            severity_description, severity_number, vuln_description, vulnerability,
+            confirmed, filename, loc, line_number,
+            severity_description, vuln_description, vulnerability,
             reason, verification, project_name
         ) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING id;
     `
 
     // Execute the query
     var id int
-    err = db.QueryRow(query, vuln.Color, vuln.Confirmed, vuln.FileContents, vuln.Filename, vuln.LOC, vuln.LineNumber,
-        vuln.SeverityDescription, vuln.SeverityNumber, vuln.VulnDescription, vuln.Vulnerability, vuln.Reason, vuln.Verification, project).
+    err = db.QueryRow(query, vuln.Confirmed, vuln.Filename, vuln.LOC, vuln.LineNumber,
+        vuln.SeverityDescription, vuln.VulnDescription, vuln.Vulnerability, vuln.Reason, vuln.Verification, project).
         Scan(&id)
 
     if err != nil {

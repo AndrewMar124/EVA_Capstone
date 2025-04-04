@@ -9,14 +9,11 @@ CREATE TABLE project (
 
 CREATE TABLE vulnerability (
     id SERIAL PRIMARY KEY,
-    color TEXT,
     confirmed TEXT,
-    file_contents TEXT,
     filename TEXT,
     loc TEXT,
     line_number INTEGER,
     severity_description TEXT,
-    severity_number INTEGER,
     vuln_description TEXT,
     vulnerability TEXT,
     reason TEXT,

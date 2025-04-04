@@ -202,19 +202,16 @@ func serveVulnerabilities(w http.ResponseWriter, r *http.Request) {
 		// Explicitly map database columns to struct fields
 		err := rows.Scan(
 			&v.ID,                  // Column: id
-			&v.Color,               // Column: color
 			&v.Confirmed,           // Column: confirmed
-			&v.FileContents,        // Column: file_contents
 			&v.Filename,            // Column: filename
 			&v.LOC,                 // Column: loc
 			&v.LineNumber,          // Column: line_number
 			&v.SeverityDescription, // Column: severity_description
-			&v.SeverityNumber,      // Column: severity_number
 			&v.VulnDescription,     // Column: vuln_description
 			&v.Vulnerability,       // Column: vulnerability
 			&v.Reason,              // Column: reason
 			&v.Verification,        // Column: verification
-			&v.CreatedAt,           // Column: created_at
+			&v.Project_Name,           // Column: created_at
 		)
 		if err != nil {
 			http.Error(w, "Error reading data", http.StatusInternalServerError)
