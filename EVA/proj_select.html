@@ -6,32 +6,58 @@
    <link rel="stylesheet" href="/static/bootstrap.min.css">
    <script src="/static/htmx.min.js"></script>
    <title>EVA</title>
+   <style>
+    footer {
+      background-color: #555;
+      color: white;
+      padding: 15px;
+    }
+header {
+      background-color: #555;
+      color: white;
+      padding: 15px;
+    }
+    .row.content {height: 100vh;}
+   </style>
+   </head>
    <body>
+
+    <header>
+      <h1>EVA: Enhanced Vulnerability Analysis</h1>
+      </header>
      <!-- Navigation (Navbar) -->
      <nav class="navbar navbar-default">
         <div class="container-fluid">
-          <div class="navbar-header">
-            <a class="navbar-brand" href="https://github.com/AndrewMar124">EVA</a>
-          </div>
           <ul class="nav navbar-nav">
-            <li class="active"><a href="/proj">Projects</a></li>
+            <li><a href="/proj">Projects</a></li>
+            <li><a href="/create_proj">New Project</a></li>
           </ul>
         </div>
       </nav>
 
-      <a href="/create_proj">Create New Project</a>
 
+      <div class="container-fluid text-center">    
+        <div class="row content">
+          <div class="col-sm-2 sidenav">
       <h2>Projects</h2>
-      <ul>
+      <div class="list-group text-left">
         {{range .}}
-        <li>
-            <a href="/view_project?p={{.Name}}">{{.Name}}</a>
-        </li>
+            <a href="/view_project?p={{.Name}}" class="list-group-item">{{.Name}}</a>
         {{else}}
         <p>No projects found.</p>
         {{end}}
-    </ul>
+      </div>
+    </div>
 
-    
+
+    <div class="col-sm-8 text-left">
+      </div>
+      <div class="col-sm-2 sidenav">
+        </div>
+
+
+  </div></div>
+
+    <footer></footer>
 </body>
 </html>

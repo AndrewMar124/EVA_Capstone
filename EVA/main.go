@@ -176,7 +176,7 @@ func processCSVAndSendRequests(file_path string, project string) {
 
 func sendToLLM(prompt string) string {
 	requestBody := map[string]interface{}{
-		"model": "EVAmodel",
+		"model": "qwen2.5-coder:0.5b",
 		"system": `You are an AI designed to analyze the results of a static code analysis. Your capabilities are limited to the following:
 
 		1. You will receive an input:
