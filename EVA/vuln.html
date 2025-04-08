@@ -24,6 +24,7 @@ th {background-color: #f2f2f2;position: sticky;top: 0;z-index: 2;}
 		<h2>Vulnerabilities List</h2>
 		<table>
 			<tr>
+				<th>Options</th>
 				<th>Confirmed</th>
 				<th>Severity Description</th>
 				<th>EVA Verification</th>
@@ -37,6 +38,15 @@ th {background-color: #f2f2f2;position: sticky;top: 0;z-index: 2;}
 			{{range .}}
 			<tr>
 				<div id="id" style="display: none;">{{.ID}}</div>
+				<td><form action="/confirm" method="POST">
+					<input type="hidden" name="id" value="{{.ID}}">
+					<button type="submit">Confirm</button>
+				  </form>
+					<form action="/delete" method="POST">
+					<input type="hidden" name="id" value="{{.ID}}">
+					<button type="submit">Delete</button>
+				  </form>
+				  </td>
 				<td>{{.Confirmed}}</td>
 				<td>{{.SeverityDescription}}</td>
 				<td>{{.Verification}}</td>
