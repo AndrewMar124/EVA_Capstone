@@ -17,7 +17,7 @@ type Project struct {
 }
 
 func main() {
-	http.HandleFunc("/", serveDash)
+	http.HandleFunc("/", projectListHandler)
 	http.HandleFunc("/vuln", serveVulnerabilities)
 	http.HandleFunc("/proj", projectListHandler)
 	http.HandleFunc("/create_proj", serve_create_proj)
@@ -38,9 +38,6 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func serveDash(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "dash.html")
-}
 
 func serve_create_proj(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "create_project.html")
@@ -97,7 +94,7 @@ func update_project(w http.ResponseWriter, r *http.Request) {
 		defer db.Close()
 	
 		// Update the project with the new file path
-		query := "UPDATE project SET sca = $1 WHERE id = $2"
+		query := "UPDATE project SET sca = $1 WHERE name = $2"
 		_, err = db.Exec(query, filePath, projectID)
 		if err != nil {
 			http.Error(w, "Failed to update project in database", http.StatusInternalServerError)

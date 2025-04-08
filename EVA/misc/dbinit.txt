@@ -19,5 +19,5 @@ CREATE TABLE vulnerability (
     reason TEXT,
     verification TEXT,
     project_name VARCHAR(255),
-    FOREIGN KEY (project_name) REFERENCES project(name)
+    FOREIGN KEY (project_name) REFERENCES project(name) ON DELETE CASCADE
 );
