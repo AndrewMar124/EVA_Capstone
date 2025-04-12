@@ -90,10 +90,6 @@ func insertVulnerabilityFromJSON(db *sql.DB, llmr string, prompt string, project
     return nil
 }
 
-
-
-
-
 func getFileContents(filePath string) string {
 	normalizedPath := strings.ReplaceAll(filePath, "\\", "/")
 	path := strings.ReplaceAll(normalizedPath, "Z:", "")

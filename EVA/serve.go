@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"html/template"
 	"log"
@@ -365,13 +366,27 @@ func serveVulnerabilities(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Query all vulnerabilities
-	rows, err := db.Query("SELECT * FROM vulnerability WHERE project_name = $1", project)
+	filter := r.URL.Query().Get("filter")
+
+	var rows *sql.Rows
+	var err error
+	
+	if filter == "all" {
+		rows, err = db.Query("SELECT * FROM vulnerability WHERE project_name = $1 ORDER BY severity_description", project)
+	} else if filter == "unconfirmed" {
+		rows, err = db.Query("SELECT * FROM vulnerability WHERE project_name = $1 AND confirmed = 'False'", project)
+	} else if filter == "confirmed" {
+		rows, err = db.Query("SELECT * FROM vulnerability WHERE project_name = $1 AND confirmed = 'True'", project)
+	} else {
+		rows, err = db.Query("SELECT * FROM vulnerability WHERE project_name = $1", project)
+	}
+	
 	if err != nil {
 		http.Error(w, "Error fetching data", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
+	
 
 	var vulnerabilities []Vulnerability
 	// Loop through each row and map columns to the struct

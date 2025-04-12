@@ -51,10 +51,21 @@ header {
       <p>File: {{.Sca}}</p>
       <a href="/edit?p={{.Name}}">Project Settings</a><br><br>
 
-      <a href="/runEVA?p={{.Name}}">RUN EVA</a>
+      <a href="/runEVA?p={{.Name}}">RUN EVA</a><br><br>
+
+      <form hx-get="/vuln?p={{.Name}}" hx-target="#v" hx-swap="innerHTML">
+        <label for="filter">Select Filter:</label>
+        <select name="filter" id="filter">
+          <option value="all" selected>All</option>
+          <option value="unconfirmed">Unconfirmed</option>
+          <option value="confirmed">Confirmed</option>
+        </select>
+        <button type="submit">Submit</button>
+      </form>
       </div>
       <div class="col-sm-11 text-left">
-      <div hx-get="/vuln?p={{.Name}}" hx-trigger="load"></div>
+        
+      <div id="v" hx-get="/vuln?p={{.Name}}&filter=all" hx-trigger="load"></div>
       </div>
 </div></div>
       
