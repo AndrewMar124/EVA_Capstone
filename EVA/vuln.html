@@ -24,38 +24,32 @@ th {background-color: #f2f2f2;position: sticky;top: 0;z-index: 2;}
 		<h2>Vulnerabilities List</h2>
 		<table>
 			<tr>
-				<th>Options</th>
-				<th>Confirmed</th>
-				<th>Severity Description</th>
-				<th>EVA Verification</th>
-				<th>EVA Reasoning</th>
-				<th>Filename</th>
-				<th>LOC</th>
-				<th>Line Number</th>
-				<th>Vulnerability</th>
-				<th>Vuln Description</th>
+				<th>Confirm Vulnerability</th>
+				<th>EVA Verification & Reasoning</th>
+				<th>Filename <br>Line Number<br>Line of Code</th>
+				<th>Severity Description <br> Vulnerability <br> Vuln. Description</th>
 			</tr>
 			{{range .}}
 			<tr>
 				<div id="id" style="display: none;">{{.ID}}</div>
-				<td><form action="/confirm" method="POST">
+				<td style="max-width: 50px;">id: {{.ID}}
+					<h4 style="margin: 0;">Confirmation Status : {{.Confirmed}}</h4><hr>
+					<h4>Options</h4>
+					<form action="/confirm" method="POST">
 					<input type="hidden" name="id" value="{{.ID}}">
 					<button type="submit">Confirm</button>
 				  </form>
+				  <br>
 					<form action="/delete" method="POST">
 					<input type="hidden" name="id" value="{{.ID}}">
 					<button type="submit">Delete</button>
 				  </form>
 				  </td>
-				<td>{{.Confirmed}}</td>
-				<td>{{.SeverityDescription}}</td>
-				<td>{{.Verification}}</td>
-				<td>{{.Reason}}</td>
-				<td>{{.Filename}}</td>
-				<td>{{.LOC}}</td>
-				<td>{{.LineNumber}}</td>
-				<td>{{.Vulnerability}}</td>
-				<td>{{.VulnDescription}}</td>
+				<td style="min-width: 500px;"><h4 style="margin: 0;">{{.Verification}}</h4><br><hr>
+					{{.Reason}}
+				</td>
+				<td>{{.Filename}}<hr>{{.LineNumber}}<hr>{{.LOC}}</td>
+				<td>{{.SeverityDescription}}<hr>{{.Vulnerability}}<hr>{{.VulnDescription}}</td>
 				
 			</tr>
 			{{end}}

@@ -241,7 +241,3 @@ func sendToLLM(prompt string) string {
 
 	return "No response field found"
 }
-
-//func main() {
-//	processCSVAndSendRequests()
-//}
