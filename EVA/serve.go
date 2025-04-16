@@ -372,7 +372,7 @@ func serveVulnerabilities(w http.ResponseWriter, r *http.Request) {
 	var err error
 	
 	if filter == "all" {
-		rows, err = db.Query("SELECT * FROM vulnerability WHERE project_name = $1 ORDER BY severity_description", project)
+		rows, err = db.Query("SELECT * FROM vulnerability WHERE project_name = $1 ORDER BY id", project)
 	} else if filter == "unconfirmed" {
 		rows, err = db.Query("SELECT * FROM vulnerability WHERE project_name = $1 AND confirmed = 'False'", project)
 	} else if filter == "confirmed" {
