@@ -6,7 +6,7 @@ EVA is an easy and effective AI integration with Static Code Analysis. Built usi
 
 - Import CSV files from Visual Code Grepper (FOSS SCA tool)
 - Run AI powered analysis on vulnerabiites
-- Manage multiple projcets and organize vulnerabilites
+- Manage multiple projects and organize vulnerabilites
 
 ## Dependencies
 
