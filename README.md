@@ -14,7 +14,7 @@ Ensure the following dependencies are installed on your system:
 
 - [PostgreSQL (pSQL)](https://www.postgresql.org/download/) *** Must be initialized with code in /EVA/misc/dbinit.txt, can be quickly run with start_psql.sh
 - [Ollama](https://ollama.com/) *** Must download LLM within ollama
-- *optional* [Go](https://golang.org/doc/install)
+- [Go](https://golang.org/doc/install)
 - *optional* [Visual Code Grepper](https://github.com/nccgroup/VCG)
 
 ## Installing LLM for local AI
